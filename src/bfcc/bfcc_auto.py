@@ -32,4 +32,7 @@ class BFCCAuto:
             "status": self.status,
             "engines": self.engines,
         }
-        
+if __name__ == "__main__":
+    bfcc_auto = BFCCAuto()
+    bfcc_auto.start()
+    print(bfcc_auto.get_status())
