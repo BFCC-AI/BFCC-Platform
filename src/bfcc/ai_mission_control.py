@@ -10,7 +10,7 @@ class AIMissionControl:
             self.status = "Ready"
             self.modules = []
         def get_status(self):
-        return {
+            return {
             "name": self.name,
             "version": self.version,
             "status": self.status,
