@@ -1,3 +1,4 @@
+from ceo_dashboard import CEODashboard
 class BFCCCore:
     def __init__(self):
         self.name = "BFCC Platform"
