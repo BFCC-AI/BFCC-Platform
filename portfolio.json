@@ -1,0 +1,54 @@
+{
+  "snapshot_date": "2026-07-11",
+  "currency": "USD",
+  "total_assets": 26920.81,
+  "cash": 873.29,
+  "weekly_target_sar": 5000,
+  "positions": [
+    {
+      "symbol": "NXE",
+      "name": "NexGen Energy",
+      "qty": 250,
+      "avg": 9.387,
+      "price": 9.52,
+      "role": "نمو/يورانيوم",
+      "account": "Moomoo"
+    },
+    {
+      "symbol": "DNN",
+      "name": "Denison Mines",
+      "qty": 1000,
+      "avg": 3.062,
+      "price": 3.04,
+      "role": "نمو/يورانيوم",
+      "account": "Moomoo"
+    },
+    {
+      "symbol": "EU",
+      "name": "enCore Energy",
+      "qty": 10000,
+      "avg": 1.391,
+      "price": 1.36,
+      "role": "استراتيجي/يورانيوم",
+      "account": "Moomoo"
+    },
+    {
+      "symbol": "SPCX",
+      "name": "SpaceX Private Shares",
+      "qty": 20,
+      "avg": 193.1225,
+      "price": 193.1225,
+      "role": "ثروة طويلة الأجل",
+      "account": "Private"
+    },
+    {
+      "symbol": "NXB",
+      "name": "NextBoat",
+      "qty": 1200,
+      "avg": 3.1,
+      "price": 2.5563,
+      "role": "تدوير/تخارج مرحلي",
+      "account": "TradeStation"
+    }
+  ]
+}
