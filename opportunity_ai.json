@@ -1,11 +1,6 @@
 {
-  "id": "opportunity_ai",
-  "name": "Opportunity AI",
+  "id": "OPPORTUNITY_AI",
+  "name": "Opportunity Bank AI",
   "status": "ACTIVE",
-  "version": "1.0",
-  "kpis": [
-    "Performance",
-    "Learning"
-  ],
-  "next": "Implement engine"
+  "priority": 2
 }

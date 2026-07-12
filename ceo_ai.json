@@ -1,11 +1,6 @@
 {
-  "id": "ceo_ai",
+  "id": "CEO_AI",
   "name": "CEO AI",
   "status": "ACTIVE",
-  "version": "1.0",
-  "kpis": [
-    "Performance",
-    "Learning"
-  ],
-  "next": "Implement engine"
+  "priority": 1
 }

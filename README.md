@@ -1,2 +1,2 @@
 # AI Board
-Operational manager definitions.
+Runtime managers initialized.

@@ -1,11 +1,6 @@
 {
-  "id": "rnd_ai",
-  "name": "R&D AI",
+  "id": "RND_AI",
+  "name": "Research & Development AI",
   "status": "ACTIVE",
-  "version": "1.0",
-  "kpis": [
-    "Performance",
-    "Learning"
-  ],
-  "next": "Implement engine"
+  "priority": 1
 }
