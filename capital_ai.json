@@ -1,0 +1,11 @@
+{
+  "id": "capital_ai",
+  "name": "Capital AI",
+  "status": "ACTIVE",
+  "version": "1.0",
+  "kpis": [
+    "Performance",
+    "Learning"
+  ],
+  "next": "Implement engine"
+}

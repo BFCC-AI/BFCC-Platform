@@ -1,0 +1,66 @@
+{
+  "board": "OMEGA PRIME AI Executive Board",
+  "version": "1.0.0",
+  "manager_count": 8,
+  "status": "READY_FOR_ORCHESTRATION",
+  "decision_flow": [
+    "research_and_development",
+    "macro",
+    "opportunity",
+    "portfolio",
+    "risk",
+    "capital",
+    "quality",
+    "ceo"
+  ],
+  "quality_rules": {
+    "no_single_source_decisions": true,
+    "minimum_source_count": 2,
+    "execution_requires_invalidation_condition": true,
+    "execution_requires_confidence": 70,
+    "uec_status": "portfolio_memory_watchlist_only",
+    "capital_goal": "maximize_net_worth_protect_capital_increase_capital_efficiency"
+  },
+  "managers": [
+    {
+      "id": "CAP-AI-001",
+      "title": "Chief Capital AI",
+      "mission": "Keep every dollar assigned to productive work, tactical reserve, rotation, or wealth fund."
+    },
+    {
+      "id": "CEO-AI-001",
+      "title": "CEO AI",
+      "mission": "Issue final executive decision after council review."
+    },
+    {
+      "id": "MAC-AI-001",
+      "title": "Chief Macro AI",
+      "mission": "Translate macro, rates, dollar, energy and geopolitics into portfolio effects."
+    },
+    {
+      "id": "OPP-AI-001",
+      "title": "Chief Opportunity AI",
+      "mission": "Search beyond current holdings and rank opportunities against opportunity cost."
+    },
+    {
+      "id": "PRT-AI-001",
+      "title": "Chief Portfolio AI",
+      "mission": "Maintain current holdings, watchlist and portfolio memory with strict classification."
+    },
+    {
+      "id": "QAA-AI-001",
+      "title": "Chief Audit & Quality AI",
+      "mission": "Verify sources, data lineage, decisions and manager compliance."
+    },
+    {
+      "id": "RND-AI-001",
+      "title": "Chief Research & Development AI",
+      "mission": "Recruit, benchmark, improve and replace AI capabilities; discover investment and product opportunities."
+    },
+    {
+      "id": "RSK-AI-001",
+      "title": "Chief Risk AI",
+      "mission": "Protect capital and challenge every proposed action."
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "id": "risk_ai",
+  "name": "Risk AI",
+  "status": "ACTIVE",
+  "version": "1.0",
+  "kpis": [
+    "Performance",
+    "Learning"
+  ],
+  "next": "Implement engine"
+}

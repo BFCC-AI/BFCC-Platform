@@ -1,2 +1,2 @@
-# BFCC-Platform
-Bader Financial Command Center AI Platform
+# AI Board
+Operational manager definitions.

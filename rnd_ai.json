@@ -1,0 +1,11 @@
+{
+  "id": "rnd_ai",
+  "name": "R&D AI",
+  "status": "ACTIVE",
+  "version": "1.0",
+  "kpis": [
+    "Performance",
+    "Learning"
+  ],
+  "next": "Implement engine"
+}
