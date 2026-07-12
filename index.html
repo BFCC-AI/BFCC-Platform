@@ -1,30 +1,17 @@
-<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>OMEGA PRIME Fusion MVP</title><link rel="stylesheet" href="styles.css"></head>
-<body><div class="app"><aside><div class="brand">OMEGA PRIME</div><div class="sub">Fusion Executive Operating System — MVP v0.1</div><nav>
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>OMEGA PRIME Runtime</title><link rel="stylesheet" href="styles.css"></head>
+<body><div class="app"><aside><div class="brand">OMEGA PRIME</div><div class="sub">AI Executive Board Runtime — v0.2</div><nav>
 <button class="active" data-view="dashboard">غرفة القيادة</button><button data-view="portfolio">المحفظة التنفيذية</button><button data-view="board">مجلس المديرين AI</button><button data-view="capital">تدوير رأس المال</button>
-</nav><div class="notice">نسخة تشغيلية محلية. الأرقام المبدئية قابلة للتعديل وليست أسعارًا حية أو أوامر تلقائية.</div></aside>
-<main><div class="topbar"><div><h1>مركز المهمة التنفيذية</h1><div class="muted">الوقت × رأس المال × القرار</div></div><div><button id="exportBtn" class="btn ghost">تصدير الجلسة</button> <button id="runBtn" class="btn primary">تشغيل مجلس المديرين</button></div></div>
-
+</nav><div class="notice">تشغيل محلي قائم على قواعد وبيانات JSON. لا ينفذ أوامر تداول ولا يدّعي أسعارًا حية.</div></aside>
+<main><div class="topbar"><div><h1>مركز المهمة التنفيذية</h1><div class="muted">القرار بعد اكتمال البحث والمخاطر ورأس المال والتدقيق</div></div><div><button id="exportBtn" class="btn ghost">تصدير الجلسة</button> <button id="runBtn" class="btn primary">تشغيل مجلس المديرين</button></div></div>
 <section id="dashboard" class="view"><div class="grid">
-<div class="card metric"><span class="muted">إجمالي الأصول</span><b id="total"></b></div><div class="card metric"><span class="muted">السيولة</span><b id="cash" class="cyan"></b></div><div class="card metric"><span class="muted">رأس المال العامل</span><b id="working" class="green"></b></div><div class="card metric"><span class="muted">مؤشر المخاطر</span><b id="risk" class="amber"></b></div>
-<div class="card span8"><h3>الأوامر التنفيذية</h3><div id="orders"></div></div>
+<div class="card metric"><span class="muted">إجمالي الأصول المحسوب</span><b id="total"></b></div><div class="card metric"><span class="muted">السيولة المؤكدة</span><b id="cash" class="cyan"></b></div><div class="card metric"><span class="muted">رأس المال العامل</span><b id="working" class="green"></b></div><div class="card metric"><span class="muted">مؤشر المخاطر</span><b id="risk" class="amber"></b></div>
+<div class="card span8"><h3>القرار التنفيذي للمجلس</h3><div id="orders"></div></div>
 <div class="card span4"><h3>توزيع مهمة السيولة</h3><div id="capitalBars"></div></div>
+<div class="card span6"><h3>Opportunity Bank</h3><div id="opportunities"></div></div>
+<div class="card span6"><h3>R&D Development Queue</h3><div id="rndQueue"></div></div>
 <div class="card span12"><h3>سجل تشغيل المجلس</h3><div id="log" class="log"><div class="muted">جاهز للتشغيل.</div></div></div>
 </div></section>
-
-<section id="portfolio" class="view hidden"><div class="card"><h3>Portfolio Command — عدّل الكمية/المتوسط/السعر وسيعيد النظام الحساب فورًا</h3><div style="overflow:auto"><table><thead><tr><th>الأصل</th><th>الكمية</th><th>المتوسط</th><th>السعر</th><th>P/L</th><th>التركيز</th><th>مناطق البناء</th><th>وقف مرجعي</th><th>الأهداف</th><th>قرار المدير</th></tr></thead><tbody id="portfolioBody"></tbody></table></div></div></section>
-
-<section id="board" class="view hidden"><div class="grid"><div class="card span6"><h3>المديرون المعتمدون</h3><div class="managers">
-<div class="manager" data-manager="CSRO"><b>CSRO AI</b><div>البحث والاستراتيجية</div><div class="status">جاهز</div></div>
-<div class="manager" data-manager="CIO"><b>CIO AI</b><div>الاستثمار ورأس المال</div><div class="status">جاهز</div></div>
-<div class="manager" data-manager="CRO"><b>CRO AI</b><div>المخاطر والسيناريوهات</div><div class="status">جاهز</div></div>
-<div class="manager" data-manager="COO"><b>COO AI</b><div>الفرص والبنوك</div><div class="status">جاهز</div></div>
-<div class="manager" data-manager="CCRO"><b>CCRO AI</b><div>تدوير رأس المال</div><div class="status">جاهز</div></div>
-<div class="manager" data-manager="CPO"><b>CPO AI</b><div>إدارة المحافظ</div><div class="status">جاهز</div></div>
-<div class="manager" data-manager="CWO"><b>CWO AI</b><div>الثروة وDRIP</div><div class="status">جاهز</div></div>
-<div class="manager" data-manager="CEO"><b>CEO AI</b><div>القرار التنفيذي النهائي</div><div class="status">جاهز</div></div>
-</div></div>
-<div class="card span6"><h3>معمارية Fusion</h3><p class="muted">النسخة الحالية تستخدم محرك قواعد محليًا كي تعمل فورًا دون مفاتيح API. مجلد backend يحتوي هيكل OpenAI Agents SDK لتبديل كل مدير لاحقًا إلى وكيل AI حقيقي مع handoffs وtracing.</p><div class="order"><strong>Research → Opportunity → Risk → Capital → CEO</strong><span class="muted">لا يصدر القرار النهائي قبل اكتمال جميع المراجعات.</span></div></div></div></section>
-
-<section id="capital" class="view hidden"><div class="grid"><div class="card span6"><h3>Capital Rotation</h3><p>كل سيولة محررة تمر تلقائيًا عبر ثلاث مهام:</p><div id="capitalBars"></div></div><div class="card span6"><h3>قواعد رأس المال</h3><div class="order"><strong>لا بيع بلا وجهة</strong><span class="muted">كل تخارج يجب أن يحدد المبلغ المتوقع وخطة إعادة التوظيف.</span></div><div class="order"><strong>لا زيادة بلا حد مخاطرة</strong><span class="muted">كل إضافة مرتبطة بوقف مرجعي وحجم دفعة.</span></div><div class="order"><strong>DRIP جزء من صندوق الثروة</strong><span class="muted">نسبة مستقلة من السيولة الجديدة للدخل المركب.</span></div></div></div></section>
-
-</main></div><script src="app.js"></script><div style="position:fixed;bottom:10px;right:10px;background:#0a0;color:#fff;padding:8px">AI Board Runtime Enabled</div></body></html>
+<section id="portfolio" class="view hidden"><div class="grid"><div class="card span12"><h3>Current Holdings — المراكز المملوكة فقط</h3><div style="overflow:auto"><table><thead><tr><th>الأصل</th><th>الكمية</th><th>المتوسط</th><th>السعر المرجعي</th><th>P/L</th><th>التركيز</th><th>Health</th><th>Opportunity</th><th>Risk</th><th>CEI</th><th>قرار المدير</th></tr></thead><tbody id="portfolioBody"></tbody></table></div></div><div class="card span6"><h3>Watchlist</h3><div id="watchlist"></div></div><div class="card span6"><h3>Portfolio Memory</h3><div id="memory"></div></div></div></section>
+<section id="board" class="view hidden"><div class="grid"><div class="card span8"><h3>المديرون المعتمدون</h3><div class="managers" id="managers"></div></div><div class="card span4"><h3>سلسلة القرار</h3><div class="order"><strong>R&D → Opportunity → Risk → Capital → Audit → CEO</strong><span class="muted">لا يعتمد القرار النهائي قبل اكتمال جميع المراجعات.</span></div><div class="order"><strong>Performance + Learning</strong><span class="muted">تسجل الجلسة نتائج كل مدير تمهيدًا للتقييم والتطوير.</span></div></div></div></section>
+<section id="capital" class="view hidden"><div class="grid"><div class="card span6"><h3>Capital Rotation</h3><div id="capitalBars2"></div></div><div class="card span6"><h3>قواعد رأس المال</h3><div class="order"><strong>لا بيع بلا وجهة</strong><span class="muted">كل تخارج يحدد مبلغًا متوقعًا وخطة إعادة توظيف.</span></div><div class="order"><strong>لا زيادة بلا إبطال</strong><span class="muted">كل إضافة تذكر سبب القرار والثقة وما يبطل القرار.</span></div><div class="order"><strong>لا دولار متجمد</strong><span class="muted">السيولة إما تعمل أو محجوزة لفرصة محددة أو احتياط تكتيكي.</span></div></div></div></section>
+</main></div><script src="app.js"></script></body></html>

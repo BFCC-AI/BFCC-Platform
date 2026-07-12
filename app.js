@@ -1,124 +1,36 @@
-
 const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
-let state={portfolio:null, orders:[], logs:[]};
-
-async function loadData(){
-  try{
-    const r=await fetch('data/portfolio.json'); state.portfolio=await r.json();
-  }catch(e){
-    state.portfolio=window.EMBEDDED_PORTFOLIO;
-  }
-  renderAll();
-}
-function money(v){return Number(v).toLocaleString('en-US',{style:'currency',currency:'USD',maximumFractionDigits:2})}
-function positionValue(p){return p.qty*p.price}
-function pnl(p){return p.qty*(p.price-p.avg)}
-function pct(p){return ((p.price/p.avg)-1)*100}
-function concentration(p){return positionValue(p)/state.portfolio.total_assets*100}
-function riskScore(p){
-  let s=25;
-  if(concentration(p)>25)s+=30;
-  if(pct(p)<-20)s+=25;
-  if(p.role.includes('تخارج'))s+=15;
-  return Math.min(100,s);
-}
-function decision(p){
-  const change=pct(p), conc=concentration(p);
-  if(p.role.includes('تخارج')) return {label:'تخفيف مرحلي', cls:'amber'};
-  if(conc>35) return {label:'لا زيادة / خفض التركّز', cls:'red'};
-  if(change<-15) return {label:'مراجعة الفرضية', cls:'red'};
-  if(change>8) return {label:'احتفاظ مع جني مرحلي', cls:'green'};
-  return {label:'احتفاظ ومراقبة', cls:'cyan'};
-}
-function levels(p){
-  const vol = p.symbol==='NXB'?0.10:p.symbol==='EU'?0.06:0.045;
-  const entry1=p.price*(1-vol*.55), entry2=p.price*(1-vol);
-  const stop=p.price*(1-vol*1.65);
-  const t1=p.price*(1+vol*1.4), t2=p.price*(1+vol*2.4);
-  return {entry1,entry2,stop,t1,t2};
-}
-function renderAll(){renderMetrics();renderPortfolio();renderOrders();renderCapital()}
-function renderMetrics(){
-  const p=state.portfolio, invested=p.positions.reduce((a,x)=>a+positionValue(x),0);
-  $('#total').textContent=money(p.total_assets); $('#cash').textContent=money(p.cash);
-  $('#working').textContent=((invested/p.total_assets)*100).toFixed(1)+'%';
-  const risk=Math.round(p.positions.reduce((a,x)=>a+riskScore(x)*concentration(x),0)/100);
-  $('#risk').textContent=risk+'/100';
-}
-function renderPortfolio(){
- const tbody=$('#portfolioBody'); tbody.innerHTML='';
- state.portfolio.positions.forEach((p,i)=>{
-   const d=decision(p), l=levels(p);
-   const tr=document.createElement('tr');
-   tr.innerHTML=`<td><b>${p.symbol}</b><div class="muted">${p.account}</div></td>
-   <td><input data-i="${i}" data-k="qty" value="${p.qty}"></td>
-   <td><input data-i="${i}" data-k="avg" value="${p.avg}"></td>
-   <td><input data-i="${i}" data-k="price" value="${p.price}"></td>
-   <td class="${pnl(p)>=0?'green':'red'}">${money(pnl(p))}<div>${pct(p).toFixed(1)}%</div></td>
-   <td>${concentration(p).toFixed(1)}%</td>
-   <td>${money(l.entry1)} / ${money(l.entry2)}</td>
-   <td class="red">${money(l.stop)}</td><td>${money(l.t1)} / ${money(l.t2)}</td>
-   <td class="action ${d.cls}">${d.label}</td>`;
-   tbody.appendChild(tr);
- });
- $$('input[data-i]').forEach(el=>el.onchange=e=>{
-   const i=+e.target.dataset.i,k=e.target.dataset.k;
-   state.portfolio.positions[i][k]=+e.target.value; renderAll();
- });
-}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+let state={portfolio:null,runtime:null,orders:[],logs:[],opportunities:[],rnd:[],session:null};
+async function getJSON(path,fallback){try{const r=await fetch(path+'?v='+Date.now());if(!r.ok)throw Error(r.status);return await r.json()}catch(e){return fallback}}
+function money(v){return Number(v||0).toLocaleString('en-US',{style:'currency',currency:'USD',maximumFractionDigits:2})}
+function positionValue(p){return Number(p.qty)*Number(p.price)}
+function pnl(p){return Number(p.qty)*(Number(p.price)-Number(p.avg))}
+function pct(p){return Number(p.avg)?((Number(p.price)/Number(p.avg))-1)*100:0}
+function totalAssets(){return state.portfolio.cash+state.portfolio.positions.reduce((a,p)=>a+positionValue(p),0)}
+function concentration(p){return totalAssets()?positionValue(p)/totalAssets()*100:0}
+function riskScore(p){let s=22;if(concentration(p)>25)s+=28;if(pct(p)<-20)s+=24;if((p.role||'').includes('تخارج'))s+=18;if((p.account||'').includes('Private'))s+=8;return Math.min(100,Math.round(s))}
+function healthScore(p){return Math.max(0,Math.min(100,Math.round(82-(riskScore(p)*.35)+(pct(p)*.35))))}
+function opportunityScore(p){let s=58;if((p.role||'').includes('يورانيوم'))s+=12;if(pct(p)>0)s+=6;if(riskScore(p)>70)s-=22;return Math.max(0,Math.min(100,Math.round(s)))}
+function cei(p){return Math.max(0,Math.min(100,Math.round(opportunityScore(p)*.55+healthScore(p)*.35-riskScore(p)*.20+20)))}
+function decision(p){if((p.role||'').includes('تخارج'))return{label:'تخفيف مشروط / لا زيادة',cls:'amber'};if(concentration(p)>35)return{label:'خفض التركّز قبل التعزيز',cls:'red'};if(riskScore(p)>68)return{label:'مراجعة دفاعية',cls:'red'};if(cei(p)>72)return{label:'احتفاظ مشروط عالي الكفاءة',cls:'green'};return{label:'احتفاظ ومراقبة',cls:'cyan'}}
 function log(msg,cls=''){state.logs.push({msg,cls,time:new Date().toLocaleTimeString('ar-SA')});$('#log').innerHTML=state.logs.map(x=>`<div class="${x.cls}">[${x.time}] ${x.msg}</div>`).join('');$('#log').scrollTop=99999}
-const managers=[
- ['CSRO','مدير البحث والاستراتيجية'],['CIO','مدير الاستثمار'],['CRO','مدير المخاطر'],
- ['COO','مدير الفرص'],['CCRO','مدير تدوير رأس المال'],['CPO','مدير المحافظ'],['CWO','مدير الثروة'],['CEO','الرئيس التنفيذي']
-];
-async function runBoard(){
- state.orders=[];state.logs=[];renderOrders(); $('#runBtn').disabled=true;
- for(let i=0;i<managers.length;i++){
-   const [id,name]=managers[i], card=$(`[data-manager="${id}"]`);
-   card.classList.add('running'); card.querySelector('.status').textContent='يعمل الآن';
-   log(`${name}: بدأ التحليل...`,'cyan');
-   await new Promise(r=>setTimeout(r,500));
-   if(id==='CSRO') log('تم تصنيف الفرص إلى: لحظية، أسبوعية، شهرية، استراتيجية.');
-   if(id==='CIO') log(`السيولة المتاحة ${money(state.portfolio.cash)}، وتم تقييم أفضل استخدام للدولار القادم.`);
-   if(id==='CRO') {
-     const high=state.portfolio.positions.sort((a,b)=>riskScore(b)-riskScore(a))[0];
-     log(`أعلى مخاطرة حالية: ${high.symbol} بدرجة ${riskScore(high)}/100.`,'amber');
-   }
-   if(id==='COO') log('تمت مقارنة فرص النمو مع الدخل وDRIP والتدوير.');
-   if(id==='CCRO') log('تم تحديد الأصول المرشحة لتحرير السيولة وإعادة توزيعها.');
-   if(id==='CPO') log('تم تحديث متوسطات الدخول، مستويات الوقف، والأهداف لكل أصل.');
-   if(id==='CWO') log('تم ربط القرارات بهدف الأسبوع وصندوق الثروة.');
-   if(id==='CEO'){buildOrders();log('تم اعتماد الأوامر التنفيذية وإغلاق اجتماع المجلس.','green')}
-   card.classList.remove('running');card.classList.add('done');card.querySelector('.status').textContent='اكتمل';
- }
- $('#runBtn').disabled=false; renderOrders();
+async function loadData(){
+ const fallbackP={snapshot_date:'2026-07-12',cash:3970,confirmed_transfer:3970,positions:[],watchlist:[{symbol:'UEC',reason:'تم البيع'}],portfolio_memory:[{symbol:'UEC',event:'EXITED'}]};
+ const fallbackR={managers:[{id:'RND',name:'مدير الأبحاث والتطوير'},{id:'OPP',name:'مدير الفرص'},{id:'RISK',name:'مدير المخاطر'},{id:'CAP',name:'مدير رأس المال'},{id:'AUDIT',name:'مدير التدقيق والجودة'},{id:'CEO',name:'CEO AI'}]};
+ state.portfolio=await getJSON('data/portfolio.json',fallbackP);state.runtime=await getJSON('data/board_runtime.json',fallbackR);renderAll();
 }
-function buildOrders(){
- const positions=state.portfolio.positions;
- const nxb=positions.find(x=>x.symbol==='NXB');
- const eu=positions.find(x=>x.symbol==='EU');
- const nxe=positions.find(x=>x.symbol==='NXE');
- const l=levels(nxe);
- state.orders=[
-  {title:'NXB — تخفيف مرحلي مشروط',body:`بيع 200 سهم عند منطقة ${money(nxb.price*1.03)}–${money(nxb.price*1.08)}. السيولة المتوقعة ${money(200*nxb.price*1.05)}؛ 50% نمو، 30% Income/DRIP، 20% احتياطي.`},
-  {title:'EU — منع زيادة التركّز',body:`المركز يمثل تقريبًا ${concentration(eu).toFixed(1)}% من إجمالي الأصول. لا زيادة جديدة قبل انخفاض التركّز أو تحسن العائد المعدل بالمخاطر.`},
-  {title:'NXE — خطة بناء تدريجي',body:`منطقة الإضافة الأولى ${money(l.entry1)} والثانية ${money(l.entry2)}. وقف مرجعي ${money(l.stop)}. أهداف ${money(l.t1)} ثم ${money(l.t2)}. حجم التنفيذ لا يتجاوز 25% من السيولة الحالية لكل دفعة.`},
-  {title:'السيولة — مهمة واضحة',body:`تخصيص مبدئي: 45% فرص نمو، 25% Income/DRIP، 30% احتياطي حتى تتأكد إشارة السوق.`}
- ];
-}
-function renderOrders(){
- $('#orders').innerHTML=state.orders.length?state.orders.map(o=>`<div class="order"><strong>${o.title}</strong><span class="muted">${o.body}</span></div>`).join(''):'<div class="notice">اضغط «تشغيل مجلس المديرين» لإنتاج أوامر تنفيذية من بيانات المحفظة.</div>';
-}
-function renderCapital(){
- const p=state.portfolio;
- $('#capitalBars').innerHTML=[
-  ['فرص نمو',45],['Income & DRIP',25],['احتياطي سيولة',30]
- ].map(x=>`<div style="margin:11px 0"><div style="display:flex;justify-content:space-between"><span>${x[0]}</span><b>${money(p.cash*x[1]/100)}</b></div><div class="progress"><i style="width:${x[1]}%"></i></div></div>`).join('');
-}
-function exportJSON(){
- const blob=new Blob([JSON.stringify({portfolio:state.portfolio,orders:state.orders,logs:state.logs},null,2)],{type:'application/json'});
- const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='omega-session.json';a.click();
-}
+function renderAll(){renderMetrics();renderPortfolio();renderClassifications();renderManagers();renderCapital();renderOrders();renderResearch()}
+function renderMetrics(){const invested=state.portfolio.positions.reduce((a,p)=>a+positionValue(p),0),total=totalAssets();$('#total').textContent=money(total);$('#cash').textContent=money(state.portfolio.cash);$('#working').textContent=(total?invested/total*100:0).toFixed(1)+'%';const weighted=state.portfolio.positions.reduce((a,p)=>a+riskScore(p)*concentration(p),0)/100;$('#risk').textContent=Math.round(weighted)+'/100'}
+function renderPortfolio(){const tbody=$('#portfolioBody');tbody.innerHTML='';state.portfolio.positions.forEach(p=>{const d=decision(p),tr=document.createElement('tr');tr.innerHTML=`<td><b>${p.symbol}</b><div class="muted">${p.account}</div></td><td>${p.qty}</td><td>${money(p.avg)}</td><td>${money(p.price)}</td><td class="${pnl(p)>=0?'green':'red'}">${money(pnl(p))}<div>${pct(p).toFixed(1)}%</div></td><td>${concentration(p).toFixed(1)}%</td><td>${healthScore(p)}</td><td>${opportunityScore(p)}</td><td>${riskScore(p)}</td><td>${cei(p)}</td><td class="action ${d.cls}">${d.label}</td>`;tbody.appendChild(tr)})}
+function renderClassifications(){$('#watchlist').innerHTML=(state.portfolio.watchlist||[]).map(x=>`<div class="order"><strong>${x.symbol}</strong><span class="muted">${x.reason}</span></div>`).join('')||'<div class="notice">لا توجد أصول مراقبة.</div>';$('#memory').innerHTML=(state.portfolio.portfolio_memory||[]).map(x=>`<div class="order"><strong>${x.symbol} — ${x.event}</strong><span class="muted">${x.note||''}</span></div>`).join('')||'<div class="notice">لا توجد ذاكرة تخارج.</div>'}
+function renderManagers(){$('#managers').innerHTML=(state.runtime.managers||[]).map(m=>`<div class="manager" data-manager="${m.id}"><b>${m.name}</b><div class="muted">${m.mission||''}</div><div class="status">جاهز</div></div>`).join('')}
+function capitalPlan(){const cash=Number(state.portfolio.cash||0);return[['فرص قريبة مشروطة',35],['فرص متوسطة',20],['Income & DRIP',15],['صندوق الثروة',10],['احتياطي تكتيكي',20]].map(([name,pct])=>({name,pct,amount:cash*pct/100}))}
+function renderCapital(){const html=capitalPlan().map(x=>`<div style="margin:11px 0"><div style="display:flex;justify-content:space-between"><span>${x.name}</span><b>${money(x.amount)}</b></div><div class="progress"><i style="width:${x.pct}%"></i></div></div>`).join('');$('#capitalBars').innerHTML=html;$('#capitalBars2').innerHTML=html}
+function buildResearch(){const ps=state.portfolio.positions;const ranked=[...ps].sort((a,b)=>cei(b)-cei(a));state.opportunities=[{title:`أفضل مركز حالي بالكفاءة: ${ranked[0]?.symbol||'—'}`,body:`CEI ${ranked[0]?cei(ranked[0]):0}/100 — للمقارنة وليس أمر شراء.`},{title:'Watchlist: UEC',body:'غير مملوك. لا إعادة دخول إلا بمحفز خاص واختراق مؤكد وحجم تداول متوافق من أكثر من مصدر.'},{title:'بحث سوقي مطلوب',body:'AI Infrastructure، الطاقة النووية، DRIP الشرعي، والفرص منخفضة الارتباط بالمحفظة.'}];state.rnd=[{title:'تحسين جودة البيانات',body:'إضافة ختم وقت ومصدر لكل سعر وخبر ومنع القرار عند غياب التحقق.'},{title:'Academy Engine',body:'حفظ القرار والنتيجة ومقارنة توقع كل مدير بما حدث فعليًا.'},{title:'Capital Efficiency',body:'مقارنة كل مركز بفرصة بديلة قبل أي تعزيز أو احتفاظ.'}]}
+function renderResearch(){if(!state.opportunities.length)buildResearch();$('#opportunities').innerHTML=state.opportunities.map(x=>`<div class="order"><strong>${x.title}</strong><span class="muted">${x.body}</span></div>`).join('');$('#rndQueue').innerHTML=state.rnd.map(x=>`<div class="order"><strong>${x.title}</strong><span class="muted">${x.body}</span></div>`).join('')}
+function buildOrders(){const ps=state.portfolio.positions,nxb=ps.find(x=>x.symbol==='NXB'),eu=ps.find(x=>x.symbol==='EU'),best=[...ps].sort((a,b)=>cei(b)-cei(a))[0];state.orders=[{title:'قرار السيولة',body:`اعتماد ${money(state.portfolio.cash)} كسيولة مؤكدة. لا توظيف كامل؛ التقسيم ظاهر في Capital Rotation.`},{title:'NXB — دفاع رأسمالي',body:nxb?`Risk ${riskScore(nxb)}/100 وCEI ${cei(nxb)}/100. لا زيادة، وأي تخفيف يجب أن يحدد وجهة السيولة.`:'غير موجود كمركز حالي.'},{title:'EU — مراقبة التركّز',body:eu?`التركيز ${concentration(eu).toFixed(1)}%. يمنع التعزيز حتى يتحسن التركّز والعائد المعدل بالمخاطر.`:'غير موجود كمركز حالي.'},{title:'أولوية المقارنة',body:`أعلى CEI حاليًا: ${best?.symbol||'—'} (${best?cei(best):0}/100). هذا ترتيب داخلي لا توصية تنفيذ.`},{title:'UEC — تصنيف صحيح',body:'Portfolio Memory / Watchlist فقط. ليس مركزًا حاليًا ولا يدخل في الحسابات.'}]}
+async function runBoard(){state.orders=[];state.logs=[];state.opportunities=[];state.rnd=[];renderOrders();$('#runBtn').disabled=true;const managers=state.runtime.managers||[];for(const m of managers){const card=$(`[data-manager="${m.id}"]`);if(card){card.classList.remove('done');card.classList.add('running');card.querySelector('.status').textContent='يعمل الآن'}log(`${m.name}: بدأ تنفيذ المهمة.`,'cyan');await sleep(280);if(m.id==='RND'){buildResearch();log('تم إنتاج بنك فرص أولي وطابور تطوير للمنصة.')}if(m.id==='OPP')log('تمت مقارنة المراكز الحالية حسب Opportunity Score وCEI.');if(m.id==='RISK'){const h=[...state.portfolio.positions].sort((a,b)=>riskScore(b)-riskScore(a))[0];log(`أعلى مخاطرة: ${h?.symbol||'—'} بدرجة ${h?riskScore(h):0}/100.`,'amber')}if(m.id==='CAP')log(`تم توزيع ${money(state.portfolio.cash)} على خمس مهام رأسمالية دون تجميد.`);if(m.id==='PORT')log('تم فصل Current Holdings عن Watchlist وPortfolio Memory.');if(m.id==='MACRO')log('لا توجد بيانات حية موثقة داخل هذه النسخة؛ تم منع ادعاء تحديث لحظي.','amber');if(m.id==='NEWS')log('محرك الأخبار في وضع انتظار مصدر موثوق؛ لا قرار من خبر غير متحقق.');if(m.id==='AUDIT'){const bad=state.portfolio.positions.some(x=>x.symbol==='UEC');log(bad?'خطأ: UEC ظهر كمركز حالي.':'نجح التدقيق: UEC غير موجود ضمن Current Holdings.',bad?'red':'green')}if(m.id==='CEO'){buildOrders();state.session={id:'OP-'+Date.now(),started:new Date().toISOString(),cash:state.portfolio.cash,total_assets:totalAssets(),orders:state.orders};log('اعتمد CEO القرار النهائي وأغلق الجلسة.','green')}if(card){card.classList.remove('running');card.classList.add('done');card.querySelector('.status').textContent='اكتمل'}}$('#runBtn').disabled=false;renderAll()}
+function renderOrders(){$('#orders').innerHTML=state.orders.length?state.orders.map(o=>`<div class="order"><strong>${o.title}</strong><span class="muted">${o.body}</span></div>`).join(''):'<div class="notice">اضغط «تشغيل مجلس المديرين» لبدء جلسة جديدة من بيانات JSON الحالية.</div>'}
+function exportJSON(){const blob=new Blob([JSON.stringify({session:state.session,portfolio:state.portfolio,orders:state.orders,opportunities:state.opportunities,rnd:state.rnd,logs:state.logs},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='omega-session-'+Date.now()+'.json';a.click();URL.revokeObjectURL(a.href)}
 $$('nav button').forEach(b=>b.onclick=()=>{$$('nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');$$('.view').forEach(v=>v.classList.add('hidden'));$('#'+b.dataset.view).classList.remove('hidden')});
-window.EMBEDDED_PORTFOLIO={"snapshot_date": "2026-07-11", "currency": "USD", "total_assets": 26920.81, "cash": 873.29, "weekly_target_sar": 5000, "positions": [{"symbol": "NXE", "name": "NexGen Energy", "qty": 250, "avg": 9.387, "price": 9.52, "role": "نمو/يورانيوم", "account": "Moomoo"}, {"symbol": "DNN", "name": "Denison Mines", "qty": 1000, "avg": 3.062, "price": 3.04, "role": "نمو/يورانيوم", "account": "Moomoo"}, {"symbol": "EU", "name": "enCore Energy", "qty": 10000, "avg": 1.391, "price": 1.36, "role": "استراتيجي/يورانيوم", "account": "Moomoo"}, {"symbol": "SPCX", "name": "SpaceX Private Shares", "qty": 20, "avg": 193.1225, "price": 193.1225, "role": "ثروة طويلة الأجل", "account": "Private"}, {"symbol": "NXB", "name": "NextBoat", "qty": 1200, "avg": 3.1, "price": 2.5563, "role": "تدوير/تخارج مرحلي", "account": "TradeStation"}]};
 $('#runBtn').onclick=runBoard;$('#exportBtn').onclick=exportJSON;loadData();

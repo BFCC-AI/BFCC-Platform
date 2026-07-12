@@ -1,54 +1,21 @@
 {
-  "snapshot_date": "2026-07-11",
+  "snapshot_date": "2026-07-12",
   "currency": "USD",
-  "total_assets": 26920.81,
-  "cash": 873.29,
+  "confirmed_transfer": 3970,
+  "cash": 3970,
   "weekly_target_sar": 5000,
+  "goal": "تعظيم صافي الثروة وحماية رأس المال وزيادة كفاءة كل دولار",
   "positions": [
-    {
-      "symbol": "NXE",
-      "name": "NexGen Energy",
-      "qty": 250,
-      "avg": 9.387,
-      "price": 9.52,
-      "role": "نمو/يورانيوم",
-      "account": "Moomoo"
-    },
-    {
-      "symbol": "DNN",
-      "name": "Denison Mines",
-      "qty": 1000,
-      "avg": 3.062,
-      "price": 3.04,
-      "role": "نمو/يورانيوم",
-      "account": "Moomoo"
-    },
-    {
-      "symbol": "EU",
-      "name": "enCore Energy",
-      "qty": 10000,
-      "avg": 1.391,
-      "price": 1.36,
-      "role": "استراتيجي/يورانيوم",
-      "account": "Moomoo"
-    },
-    {
-      "symbol": "SPCX",
-      "name": "SpaceX Private Shares",
-      "qty": 20,
-      "avg": 193.1225,
-      "price": 193.1225,
-      "role": "ثروة طويلة الأجل",
-      "account": "Private"
-    },
-    {
-      "symbol": "NXB",
-      "name": "NextBoat",
-      "qty": 1200,
-      "avg": 3.1,
-      "price": 2.5563,
-      "role": "تدوير/تخارج مرحلي",
-      "account": "TradeStation"
-    }
+    {"symbol":"NXE","name":"NexGen Energy","qty":250,"avg":9.387,"price":9.52,"role":"نمو/يورانيوم","account":"Moomoo","classification":"current"},
+    {"symbol":"DNN","name":"Denison Mines","qty":1000,"avg":3.062,"price":3.04,"role":"نمو/يورانيوم","account":"Moomoo","classification":"current"},
+    {"symbol":"EU","name":"enCore Energy","qty":10000,"avg":1.391,"price":1.36,"role":"استراتيجي/يورانيوم","account":"Moomoo","classification":"current"},
+    {"symbol":"SPCX","name":"SpaceX Private Shares","qty":20,"avg":193.1225,"price":193.1225,"role":"ثروة طويلة الأجل","account":"Private","classification":"current"},
+    {"symbol":"NXB","name":"NextBoat","qty":1200,"avg":3.1,"price":2.5563,"role":"تدوير/تخارج مرحلي","account":"TradeStation","classification":"current"}
+  ],
+  "watchlist": [
+    {"symbol":"UEC","name":"Uranium Energy Corp.","reason":"تم البيع؛ مراقبة إعادة الدخول فقط"}
+  ],
+  "portfolio_memory": [
+    {"symbol":"UEC","event":"EXITED","note":"ليس مركزًا حاليًا ولا يدخل في إجمالي المحفظة أو توزيع السيولة"}
   ]
 }
